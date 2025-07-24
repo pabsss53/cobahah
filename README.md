@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NDVI WebGIS Application
 
 A professional web-based Geographic Information System (GIS) for visualizing and analyzing Normalized Difference Vegetation Index (NDVI) data using Sentinel Hub satellite imagery.
@@ -68,3 +69,6 @@ This project is open source and available under the MIT License.
 ## Support
 
 For issues or questions, please refer to the documentation or contact support.
+=======
+# cobahah
+>>>>>>> a38fe2e33e80a9bd4e72a47181373c618e7e75c6
