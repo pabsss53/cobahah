@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDVI WebGIS - Vegetation Index Monitoring</title>
+    <meta name="description" content="Advanced NDVI (Normalized Difference Vegetation Index) monitoring system using Sentinel Hub satellite imagery for vegetation health analysis.">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body class="light-mode">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🌱</span>
+                <span class="brand-text">NDVI</span>
+                <span class="brand-subtitle">WebGIS</span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="#" class="nav-link active" data-page="home">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="#" class="nav-link" data-page="analysis">
+                    <span class="nav-icon">📊</span>
+                    Analysis
+                </a>
+                <a href="#" class="nav-link" data-page="data">
+                    <span class="nav-icon">🗂️</span>
+                    Data
+                </a>
+                <a href="#" class="nav-link" data-page="about">
+                    <span class="nav-icon">ℹ️</span>
+                    About
+                </a>
+            </div>
+            
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <div class="page active" id="homePage">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-background">
+                    <div class="hero-image" style="background-image: url('https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop')"></div>
+                    <div class="hero-overlay"></div>
+                </div>
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            <span class="title-main">NDVI WebGIS</span>
+                            <span class="title-sub">Vegetation Index Monitoring</span>
+                        </h1>
+                        <p class="hero-description">
+                            Advanced satellite-based vegetation monitoring using Normalized Difference Vegetation Index (NDVI) 
+                            from Sentinel-2 imagery. Monitor vegetation health, agricultural productivity, and environmental changes in real-time.
+                        </p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary" onclick="scrollToMap()">
+                                <span class="btn-icon">🗺️</span>
+                                Explore Map
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToFeatures()">
+                                <span class="btn-icon">📈</span>
+                                View Analysis
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">10m</div>
+                            <div class="stat-label">Spatial Resolution</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">5 Days</div>
+                            <div class="stat-label">Revisit Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">Real-time</div>
+                            <div class="stat-label">Data Updates</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-scroll-indicator">
+                    <div class="scroll-arrow"></div>
+                </div>
+            </section>
+
+            <!-- NDVI Info Section -->
+            <section class="ndvi-info-section">
+                <div class="container">
+                    <div class="ndvi-info-grid">
+                        <div class="ndvi-info-card">
+                            <div class="info-icon">🌿</div>
+                            <h3>What is NDVI?</h3>
+                            <p>NDVI (Normalized Difference Vegetation Index) is a numerical indicator that uses the visible and near-infrared bands to analyze vegetation health and density.</p>
+                        </div>
+                        <div class="ndvi-info-card">
+                            <div class="info-icon">📡</div>
+                            <h3>Sentinel-2 Data</h3>
+                            <p>High-resolution satellite imagery from ESA's Sentinel-2 constellation provides accurate and up-to-date vegetation monitoring capabilities.</p>
+                        </div>
+                        <div class="ndvi-info-card">
+                            <div class="info-icon">🎯</div>
+                            <h3>Applications</h3>
+                            <p>Agricultural monitoring, forest health assessment, environmental research, and climate change studies benefit from NDVI analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Map Section -->
+            <section class="map-section" id="mapSection">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Interactive NDVI Map</h2>
+                        <p>Explore vegetation indices with real-time satellite data visualization</p>
+                    </div>
+                    
+                    <!-- Map Controls Panel -->
+                    <div class="map-controls-panel">
+                        <div class="control-group">
+                            <label for="layerSelect">Layer:</label>
+                            <select id="layerSelect" class="control-select">
+                                <option value="ndvi">NDVI</option>
+                                <option value="true-color">True Color</option>
+                                <option value="false-color">False Color</option>
+                                <option value="agriculture">Agriculture</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="dateSelect">Date:</label>
+                            <input type="date" id="dateSelect" class="control-input">
+                        </div>
+                        <div class="control-group">
+                            <label for="cloudCover">Max Cloud Cover:</label>
+                            <input type="range" id="cloudCover" min="0" max="100" value="20" class="control-range">
+                            <span id="cloudValue">20%</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="updateMapLayer()">
+                            <span class="btn-icon">🔄</span>
+                            Update Layer
+                        </button>
+                    </div>
+                    
+                    <div class="map-container">
+                        <div id="map" class="map"></div>
+                        <div class="map-overlay-controls">
+                            <button class="map-control-btn" onclick="resetMapView()" title="Reset View">
+                                <span>🎯</span>
+                            </button>
+                            <button class="map-control-btn" onclick="toggleNDVILayer()" title="Toggle NDVI">
+                                <span>🌱</span>
+                            </button>
+                            <button class="map-control-btn" onclick="downloadData()" title="Download Data">
+                                <span>💾</span>
+                            </button>
+                        </div>
+                        
+                        <!-- NDVI Legend -->
+                        <div class="ndvi-legend">
+                            <h4>NDVI Scale</h4>
+                            <div class="legend-scale">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #8B4513;"></div>
+                                    <span>-1.0 (Water/Rock)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #D2691E;"></div>
+                                    <span>-0.1 (Bare Soil)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #FFFF00;"></div>
+                                    <span>0.2 (Sparse Vegetation)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #ADFF2F;"></div>
+                                    <span>0.5 (Moderate Vegetation)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #228B22;"></div>
+                                    <span>0.8 (Dense Vegetation)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #006400;"></div>
+                                    <span>1.0 (Very Dense)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading Indicator -->
+                    <div class="map-loading" id="mapLoading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading satellite data...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="features-section" id="featuresSection">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Key Features</h2>
+                        <p>Comprehensive tools for vegetation monitoring and analysis</p>
+                    </div>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🛰️</div>
+                            <h3>Satellite Imagery</h3>
+                            <p>Access to high-resolution Sentinel-2 satellite imagery with 10-meter spatial resolution for detailed vegetation analysis.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <h3>Real-time Analysis</h3>
+                            <p>Perform instant NDVI calculations and vegetation health assessments with interactive visualization tools.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌍</div>
+                            <h3>Global Coverage</h3>
+                            <p>Monitor vegetation anywhere in the world with comprehensive global satellite data coverage.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📈</div>
+                            <h3>Time Series</h3>
+                            <p>Track vegetation changes over time with historical data analysis and trend visualization.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💾</div>
+                            <h3>Data Export</h3>
+                            <p>Download processed NDVI data in various formats for further analysis and research applications.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔍</div>
+                            <h3>Advanced Filters</h3>
+                            <p>Apply cloud masking, date filtering, and quality assessment tools for accurate vegetation monitoring.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Stats -->
+            <section class="quick-stats-section">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🌱</div>
+                            <div class="stat-info">
+                                <div class="stat-title">NDVI Range</div>
+                                <div class="stat-desc">-1.0 to +1.0 vegetation index scale</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📡</div>
+                            <div class="stat-info">
+                                <div class="stat-title">Sentinel-2</div>
+                                <div class="stat-desc">10m spatial resolution imagery</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-info">
+                                <div class="stat-title">5-Day Revisit</div>
+                                <div class="stat-desc">Regular satellite data updates</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🌍</div>
+                            <div class="stat-info">
+                                <div class="stat-title">Global Coverage</div>
+                                <div class="stat-desc">Worldwide vegetation monitoring</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Analysis Page -->
+        <div class="page" id="analysisPage">
+            <div class="container">
+                <div class="page-header">
+                    <h1>NDVI Analysis Dashboard</h1>
+                    <p>Comprehensive vegetation analysis tools and statistics</p>
+                </div>
+                
+                <div class="analysis-dashboard">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>NDVI Time Series</h3>
+                                <span class="card-icon">📈</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ndviTimeChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>Vegetation Distribution</h3>
+                                <span class="card-icon">🥧</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="vegetationChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>Seasonal Patterns</h3>
+                                <span class="card-icon">🌿</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="seasonalChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>Health Index</h3>
+                                <span class="card-icon">💚</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="healthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-summary">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-number">0.65</div>
+                                <div class="summary-label">Average NDVI</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-number">85%</div>
+                                <div class="summary-label">Vegetation Coverage</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-number">12.5 km²</div>
+                                <div class="summary-label">Analysis Area</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-number">Good</div>
+                                <div class="summary-label">Health Status</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Page -->
+        <div class="page" id="dataPage">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Data Management</h1>
+                    <p>Access and download NDVI datasets</p>
+                </div>
+                
+                <div class="data-content">
+                    <div class="data-filters">
+                        <div class="filter-group">
+                            <label>Date Range:</label>
+                            <input type="date" id="startDate" class="filter-input">
+                            <input type="date" id="endDate" class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                            <label>Area of Interest:</label>
+                            <select id="aoiSelect" class="filter-select">
+                                <option value="current">Current Map View</option>
+                                <option value="custom">Custom Polygon</option>
+                                <option value="upload">Upload Shapefile</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Output Format:</label>
+                            <select id="formatSelect" class="filter-select">
+                                <option value="geotiff">GeoTIFF</option>
+                                <option value="png">PNG</option>
+                                <option value="csv">CSV</option>
+                                <option value="json">JSON</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="processData()">
+                            <span class="btn-icon">⚙️</span>
+                            Process Data
+                        </button>
+                    </div>
+                    
+                    <div class="data-table">
+                        <h3>Available Datasets</h3>
+                        <table class="dataset-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Sensor</th>
+                                    <th>Cloud Cover</th>
+                                    <th>Quality</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="datasetTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Page -->
+        <div class="page" id="aboutPage">
+            <div class="container">
+                <div class="page-header">
+                    <h1>About NDVI WebGIS</h1>
+                    <p>Advanced vegetation monitoring platform</p>
+                </div>
+                
+                <div class="about-content">
+                    <div class="about-grid">
+                        <div class="about-text">
+                            <h2>Our Mission</h2>
+                            <p>NDVI WebGIS provides accessible, real-time vegetation monitoring capabilities using advanced satellite imagery and geospatial analysis tools. Our platform democratizes access to high-quality environmental data for researchers, farmers, and environmental professionals.</p>
+                            
+                            <p>By leveraging the European Space Agency's Sentinel-2 satellite constellation, we deliver accurate, up-to-date vegetation health information that supports sustainable agriculture, environmental monitoring, and climate research initiatives worldwide.</p>
+                            
+                            <h3>Technical Specifications</h3>
+                            <ul class="feature-list">
+                                <li>🛰️ Sentinel-2 MSI sensor data (10m resolution)</li>
+                                <li>📊 Real-time NDVI calculation and visualization</li>
+                                <li>🌍 Global coverage with 5-day revisit cycle</li>
+                                <li>☁️ Advanced cloud masking algorithms</li>
+                                <li>📈 Time series analysis and trend detection</li>
+                                <li>💾 Multiple data export formats</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="about-image">
+                            <img src="https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Satellite Vegetation Monitoring" class="about-img">
+                        </div>
+                    </div>
+                    
+                    <div class="methodology-section">
+                        <h2>NDVI Methodology</h2>
+                        <div class="methodology-cards">
+                            <div class="methodology-card">
+                                <div class="method-icon">📡</div>
+                                <h3>Data Acquisition</h3>
+                                <p>Sentinel-2 satellites capture multispectral imagery every 5 days, providing consistent global coverage with high spatial and temporal resolution.</p>
+                            </div>
+                            <div class="methodology-card">
+                                <div class="method-icon">🧮</div>
+                                <h3>NDVI Calculation</h3>
+                                <p>NDVI = (NIR - Red) / (NIR + Red), where NIR is near-infrared reflectance and Red is red light reflectance from vegetation surfaces.</p>
+                            </div>
+                            <div class="methodology-card">
+                                <div class="method-icon">🎨</div>
+                                <h3>Visualization</h3>
+                                <p>Color-coded maps represent vegetation health, with values ranging from -1 (water/bare soil) to +1 (dense, healthy vegetation).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <span class="brand-icon">🌱</span>
+                        <span class="brand-text">NDVI WebGIS</span>
+                    </div>
+                    <p class="footer-desc">Advanced satellite-based vegetation monitoring platform for environmental research and agricultural applications.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link" title="GitHub">💻</a>
+                        <a href="#" class="social-link" title="Research">📚</a>
+                        <a href="#" class="social-link" title="Documentation">📖</a>
+                        <a href="#" class="social-link" title="API">🔗</a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" data-page="home">Home</a></li>
+                        <li><a href="#" data-page="analysis">Analysis</a></li>
+                        <li><a href="#" data-page="data">Data</a></li>
+                        <li><a href="#" data-page="about">About</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">User Guide</a></li>
+                        <li><a href="#">Data Sources</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="contact-icon">📧</span>
+                            <span>info@ndviwebgis.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">🌐</span>
+                            <span>www.ndviwebgis.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">📊</span>
+                            <span>Powered by Sentinel Hub</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2024 NDVI WebGIS. All rights reserved.</p>
+                    <div class="footer-bottom-links">
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Data Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Status Modal -->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">System Status</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Loading satellite data...</p>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
